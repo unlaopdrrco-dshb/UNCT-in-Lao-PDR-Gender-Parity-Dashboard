@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UNCT Gender Parity Dashboard – Lao PDR</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F6F7F9; --surface:#FFFFFF; --ink:#1B2430; --muted:#5B6675; --line:#DDE2E9;
+    --women:#0E7C86; --men:#3B4A6B; --pwd:#C77700; --band:#DCEBEE; --bad:#B42318; --good:#1B7A3E;
+    --radius:6px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:"Public Sans",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.5}
+  .wrap{max-width:1080px;margin:0 auto;padding:28px 20px 56px}
+  header{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+  h1{font-size:1.75rem;line-height:1.2;margin:0 0 6px;font-weight:700;letter-spacing:-.01em}
+  .sub{margin:0;color:var(--muted);max-width:62ch}
+  .tools{display:flex;gap:8px;flex-wrap:wrap}
+  button,select{font:inherit;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:var(--radius);padding:8px 14px}
+  button{font-weight:600;cursor:pointer}
+  button:hover,select:hover{border-color:var(--ink)}
+  button:focus-visible,select:focus-visible{outline:3px solid var(--women);outline-offset:2px}
+  .picker{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+  .picker label{font-weight:600}
+  .picker select{min-width:240px;font-weight:600}
+  .banner{background:#FFF8EC;border-left:3px solid var(--pwd);padding:10px 14px;font-size:.9rem;margin-bottom:18px;border-radius:0 var(--radius) var(--radius) 0}
+
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:20px}
+  .stat{padding:18px 20px;border-left:1px solid var(--line)}
+  .stat:first-child{border-left:0}
+  .stat .n{font-size:2.1rem;font-weight:700;line-height:1.1;letter-spacing:-.02em}
+  .stat .l{color:var(--muted);font-size:.9rem;margin-top:4px}
+  .stat .s{font-size:.82rem;color:var(--muted);margin-top:2px}
+  .stat.w .n{color:var(--women)} .stat.m .n{color:var(--men)} .stat.d .n{color:var(--pwd)}
+
+  section{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px 24px;margin-bottom:20px}
+  h2{font-size:1.15rem;margin:0 0 4px;font-weight:600}
+  .lead{margin:0 0 16px;color:var(--muted);font-size:.93rem;max-width:72ch}
+  .empty{color:var(--muted);font-style:italic}
+
+  /* table */
+  .tablewrap{overflow-x:auto}
+  table{border-collapse:collapse;width:100%;font-size:.9rem;min-width:760px}
+  th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:center}
+  th{font-weight:600;background:#F0F3F7;font-size:.82rem}
+  th:first-child,td:first-child{text-align:left}
+  tr.total td{font-weight:700;background:#F0F3F7}
+  td.nodata{color:var(--muted);text-align:left}
+  .pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:.78rem;font-weight:600;white-space:nowrap}
+  .pill.ok{background:#DDF3E4;color:var(--good)} .pill.off{background:#FBE4E1;color:var(--bad)}
+
+  /* parity */
+  .prow{display:grid;grid-template-columns:200px 1fr 210px;gap:16px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+  .prow:first-of-type{border-top:0}
+  .pname{font-weight:600}
+  .pname small{display:block;font-weight:400;color:var(--muted)}
+  .track{position:relative;height:14px;background:#EEF1F5;border-radius:7px}
+  .band{position:absolute;top:-5px;bottom:-5px;background:var(--band);border-left:1px dashed var(--women);border-right:1px dashed var(--women)}
+  .dot{position:absolute;top:50%;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;background:var(--women);border:3px solid #fff;box-shadow:0 0 0 1px var(--women)}
+  .axis{display:grid;grid-template-columns:200px 1fr 210px;gap:16px;font-size:.78rem;color:var(--muted)}
+  .axis .ticks{position:relative;height:16px}
+  .axis .ticks span{position:absolute;transform:translateX(-50%)}
+  .pval{font-weight:600}
+  .pval small{display:block;font-weight:400;color:var(--muted)}
+
+  /* diverging */
+  .ghead{display:flex;justify-content:space-between;align-items:baseline;margin:16px 0 6px;padding-top:12px;border-top:1px solid var(--line)}
+  .ghead.first{border-top:0;margin-top:4px;padding-top:0}
+  .ghead b{font-weight:600} .ghead span{font-size:.88rem;color:var(--muted)}
+  .grow{display:grid;grid-template-columns:150px 1fr 1fr 56px;align-items:center;height:30px}
+  .grow .lab{font-size:.85rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .grow .pc{font-size:.8rem;color:var(--muted);text-align:right}
+  .half{height:100%;display:flex;align-items:center}
+  .half.l{justify-content:flex-end;border-right:2px solid var(--ink)}
+  .half.r{justify-content:flex-start}
+  .bar{height:18px;min-width:2px}
+  .bar.w{background:var(--women);border-radius:3px 0 0 3px}
+  .bar.m{background:var(--men);border-radius:0 3px 3px 0}
+  .num{font-size:.82rem;font-weight:600;padding:0 6px}
+  .axishint{display:grid;grid-template-columns:150px 1fr 1fr 56px;font-size:.82rem;font-weight:600;margin-bottom:2px}
+  .axishint span:nth-child(2){text-align:right;padding-right:8px;color:var(--women)}
+  .axishint span:nth-child(3){padding-left:8px;color:var(--men)}
+  .axishint span:nth-child(4){text-align:right;color:var(--muted);font-weight:500}
+
+  /* disability */
+  .dgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+  .dbox{border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px}
+  .dbox .n{font-size:1.6rem;font-weight:700;color:var(--pwd);line-height:1.1}
+  .dbox .l{font-size:.86rem;color:var(--muted);margin-top:4px}
+  .dbar{height:8px;background:#EEF1F5;border-radius:4px;margin-top:10px;overflow:hidden}
+  .dbar div{height:100%;background:var(--pwd)}
+
+  .note{font-size:.85rem;color:var(--muted);border-left:3px solid var(--pwd);padding:8px 12px;background:#FFF8EC;margin:0 0 10px;max-width:90ch}
+  footer{font-size:.82rem;color:var(--muted);margin-top:10px}
+
+  @media (max-width:760px){
+    .stats{grid-template-columns:repeat(2,1fr)}
+    .stat:nth-child(3){border-left:0}
+    .stat:nth-child(n+3){border-top:1px solid var(--line)}
+    .prow,.axis{grid-template-columns:1fr}
+    .axis > div:first-child,.axis > div:last-child{display:none}
+    .grow,.axishint{grid-template-columns:96px 1fr 1fr 44px}
+    section{padding:18px 14px}
+  }
+  @media print{
+    body{background:#fff} .noprint{display:none} section,.stats{break-inside:avoid;border-color:#ccc}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <h1>UNCT Gender Parity Dashboard: Lao PDR</h1>
+      <p class="sub">Women, men and persons with disabilities among UN personnel, by agency. Baseline for the UNCT Gender Parity Action Plan (UNCT-SWAP Gender Scorecard PI 4.3).</p>
+    </div>
+    <div class="tools noprint">
+      <button id="refresh" type="button">Refresh data</button>
+      <button id="print" type="button">Print page</button>
+    </div>
+  </header>
+
+  <div id="banner"></div>
+
+  <div class="picker noprint">
+    <label for="agency">Agency</label>
+    <select id="agency"></select>
+  </div>
+
+  <div class="stats" id="stats"></div>
+
+  <section>
+    <h2>Summary by personnel category</h2>
+    <p class="lead" id="sumlead"></p>
+    <div class="tablewrap" id="summary"></div>
+  </section>
+
+  <section>
+    <h2>Women's share against the parity band</h2>
+    <p class="lead">Parity means women make up 47–53% of personnel (the shaded band). The dot shows where each group stands.</p>
+    <div id="parity"></div>
+  </section>
+
+  <section id="compareSection" style="display:none">
+    <h2>Agency comparison</h2>
+    <p class="lead">Women's share of all reported personnel in each agency, against the parity band.</p>
+    <div id="compare"></div>
+  </section>
+
+  <div id="details"></div>
+
+  <section>
+    <h2>Persons with disabilities</h2>
+    <p class="lead">Share of personnel who reported a disability. Persons with disabilities are already counted in the women and men figures.</p>
+    <div class="dgrid" id="pwd"></div>
+  </section>
+
+  <div id="notes"></div>
+  <footer id="foot"></footer>
+</div>
+
+<script>
+/* ============================================================
+   STEP FOR YOU: paste your two Google Sheets links between the
+   quotation marks below (see the instructions). Leave them empty
+   to see the built-in WHO sample data.
+   ============================================================ */
+const CONFIG = {
+  dataCsvUrl:     "",   // link of the published "Data" tab (CSV)
+  agenciesCsvUrl: ""    // link of the published "Agencies" tab (CSV)
+};
+/* ============================ end ============================ */
+
+const ALL = "All agencies (UNCT)";
+const BAND_LOW = 47, BAND_HIGH = 53;
+const CATS = [
+  { key: "Staff", label: "Staff" },
+  { key: "NPSA", label: "NPSA (incl. FAO's NPP)" },
+  { key: "IPSA", label: "IPSA (incl. FAO's COF.REG)" },
+  { key: "Consultant", label: "Other consultancy formats" },
+  { key: "UNV", label: "UN Volunteers" }
+];
+const LEVEL_ORDER = ["D2/P7","D1/P6","P5","P4","P3","P2","P1","NOE","NOD","NOC","NOB","NOA","G7","G6","G5","G4","G3","G2","G1",
+  "NPSA-11","NPSA-10","NPSA-9","NPSA-8","NPSA-7","NPSA-6","NPSA-5","NPSA-4","NPSA-3","NPSA-2","NPSA-1","NPP.NP","NPP.NGS",
+  "IPSA 14 exp./lead","IPSA 13 lead","IPSA 13 expert","IPSA 12","IPSA 11","IPSA 10","IPSA 9","IPSA 8","IPSA 7","IPSA 6","IPSA 5","IPSA 4","IPSA 3","IPSA 2","IPSA 1","COF.REG C","COF.REG B","COF.REG A",
+  "SSA","OIC","PSA.SBS C","PSA.SBS B","PSA.SBS A","PSA.NAT","Other (specify)",
+  "Expert UNV (national)","Expert UNV (international)","Specialist UNV (national)","Specialist UNV (international)","Associate UNV (national)","Associate UNV (international)","Community UNV (national)"];
+
+/* Sample data (WHO Lao PDR) shown until a Google Sheet is connected */
+const DEMO_ROWS = [
+  ["WHO","Staff","D2/P7",0,1,0,0],["WHO","Staff","P5",1,2,0,0],["WHO","Staff","P4",2,2,0,0],["WHO","Staff","P3",4,0,0,0],["WHO","Staff","P2",0,1,0,0],
+  ["WHO","Staff","NOD",1,0,0,0],["WHO","Staff","NOC",2,0,0,0],["WHO","Staff","NOB",8,3,0,0],["WHO","Staff","NOA",4,1,0,0],
+  ["WHO","Staff","G6",3,2,0,0],["WHO","Staff","G5",7,0,0,0],["WHO","Staff","G3",0,1,0,0],["WHO","Staff","G2",0,3,0,0],["WHO","Staff","G1",2,0,0,0],
+  ["WHO","Consultant","SSA",19,23,0,1]
+].map(r => ({ agency:r[0], category:r[1], level:r[2], w:r[3], m:r[4], pw:r[5], pm:r[6] }));
+const DEMO_AGENCIES = [{ name:"WHO", note:"Consultant figures taken from the detailed table (42 people). The form's summary table showed 11. To be confirmed with the focal person." }];
+
+let rows = [], agencies = [], isDemo = false, loadError = "";
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+const sum = (a, f) => a.reduce((t, x) => t + f(x), 0);
+const f1 = n => (Math.round(n * 10) / 10).toFixed(1).replace(/\.0$/, "");
+const pct = (a, b) => b ? (a / b) * 100 : null;
+const num = v => { const n = parseFloat(String(v).replace(/,/g, "")); return isNaN(n) ? 0 : n; };
+
+/* ---------- CSV reading ---------- */
+function parseCSV(text){
+  const out = []; let row = [], cur = "", q = false;
+  for (let i = 0; i < text.length; i++){
+    const ch = text[i];
+    if (q){
+      if (ch === '"'){ if (text[i+1] === '"'){ cur += '"'; i++; } else q = false; } else cur += ch;
+    } else if (ch === '"') q = true;
+    else if (ch === ","){ row.push(cur); cur = ""; }
+    else if (ch === "\n"){ row.push(cur); out.push(row); row = []; cur = ""; }
+    else if (ch !== "\r") cur += ch;
+  }
+  if (cur !== "" || row.length){ row.push(cur); out.push(row); }
+  return out;
+}
+function toObjects(text){
+  const t = parseCSV(text); if (!t.length) return [];
+  const head = t[0].map(h => h.trim().toLowerCase());
+  return t.slice(1).map(r => { const o = {}; head.forEach((h, i) => o[h] = (r[i] || "").trim()); return o; });
+}
+function catKey(c){
+  const s = String(c).toLowerCase();
+  if (s.startsWith("staff")) return "Staff";
+  if (s.startsWith("npsa")) return "NPSA";
+  if (s.startsWith("ipsa")) return "IPSA";
+  if (s.startsWith("consult") || s.startsWith("other consult")) return "Consultant";
+  if (s.startsWith("unv") || s.includes("volunteer")) return "UNV";
+  return null;
+}
+
+/* ---------- loading ---------- */
+async function loadData(){
+  loadError = ""; isDemo = false;
+  if (!CONFIG.dataCsvUrl){ rows = DEMO_ROWS; agencies = DEMO_AGENCIES; isDemo = true; return; }
+  try {
+    const bust = u => u + (u.includes("?") ? "&" : "?") + "t=" + Date.now();
+    const d = await fetch(bust(CONFIG.dataCsvUrl)); if (!d.ok) throw new Error("Data link returned " + d.status);
+    const dObjs = toObjects(await d.text());
+    rows = dObjs.filter(o => o["agency"] && catKey(o["category"])).map(o => ({
+      agency: o["agency"], category: catKey(o["category"]), level: o["level"] || "(no level)",
+      w: num(o["women"]), m: num(o["men"]),
+      pw: num(o["women with disabilities"]), pm: num(o["men with disabilities"])
+    }));
+    agencies = [];
+    if (CONFIG.agenciesCsvUrl){
+      const a = await fetch(bust(CONFIG.agenciesCsvUrl));
+      if (a.ok){
+        agencies = toObjects(await a.text()).filter(o => o["agency (short name)"]).map(o => ({
+          name: o["agency (short name)"], note: o["data gaps, assumptions or limitations"] || ""
+        }));
+      }
+    }
+    const known = new Set(agencies.map(a => a.name));
+    [...new Set(rows.map(r => r.agency))].forEach(n => { if (!known.has(n)) agencies.push({ name: n, note: "" }); });
+    if (!rows.length) throw new Error("No data rows found in the Data tab");
+  } catch (e){
+    loadError = "Could not load the Google Sheet (" + e.message + "). Showing the WHO sample data instead.";
+    rows = DEMO_ROWS; agencies = DEMO_AGENCIES; isDemo = true;
+  }
+}
+
+/* ---------- calculations ---------- */
+function tot(list){
+  const w = sum(list, r => r.w), m = sum(list, r => r.m), pw = sum(list, r => r.pw), pm = sum(list, r => r.pm);
+  return { w, m, t: w + m, pw, pm, pt: pw + pm };
+}
+function status(p){
+  if (p === null) return null;
+  if (p < BAND_LOW) return { ok:false, text:"Below parity band", detail:f1(BAND_LOW - p) + " points below the band" };
+  if (p > BAND_HIGH) return { ok:false, text:"Above parity band", detail:f1(p - BAND_HIGH) + " points above the band" };
+  return { ok:true, text:"Within parity band", detail:"Within the parity band" };
+}
+const pill = s => s ? `<span class="pill ${s.ok ? "ok" : "off"}">${s.text}</span>` : "";
+function staffGroup(l){
+  if (/^NO[A-E]$/i.test(l)) return "National Professional Officers (NO)";
+  if (/^G\d$/i.test(l)) return "General Service (G)";
+  return "International staff (D / P)";
+}
+function levelSort(a, b){
+  const ia = LEVEL_ORDER.indexOf(a), ib = LEVEL_ORDER.indexOf(b);
+  return (ia < 0 ? 999 : ia) - (ib < 0 ? 999 : ib);
+}
+
+/* ---------- drawing ---------- */
+function parityTrack(p, label){
+  return `<div class="track" role="img" aria-label="${esc(label)}: ${f1(p)} percent women">
+    <div class="band" style="left:${BAND_LOW}%;width:${BAND_HIGH - BAND_LOW}%"></div>
+    <div class="dot" style="left:${Math.min(100, p)}%"></div></div>`;
+}
+const axisRow = `<div class="axis"><div></div><div class="ticks">
+  <span style="left:0%;transform:none">0%</span><span style="left:25%">25%</span><span style="left:50%">50%</span><span style="left:75%">75%</span><span style="left:100%;transform:translateX(-100%)">100%</span>
+  </div><div></div></div>`;
+
+function render(){
+  const sel = $("agency").value || ALL;
+  const list = sel === ALL ? rows : rows.filter(r => r.agency === sel);
+  const A = tot(list);
+  const ap = pct(A.w, A.t);
+
+  $("banner").innerHTML = loadError
+    ? `<div class="banner">${esc(loadError)}</div>`
+    : (isDemo ? `<div class="banner">Showing sample data (WHO Lao PDR). Connect your Google Sheet to show all agencies.</div>` : "");
+
+  const nAg = new Set(list.map(r => r.agency)).size;
+  $("stats").innerHTML = `
+    <div class="stat"><div class="n">${A.t}</div><div class="l">Total personnel</div><div class="s">${sel === ALL ? nAg + (nAg === 1 ? " agency" : " agencies") : esc(sel)}</div></div>
+    <div class="stat w"><div class="n">${ap === null ? "–" : f1(ap) + "%"}</div><div class="l">Women</div><div class="s">${A.w} people</div></div>
+    <div class="stat m"><div class="n">${ap === null ? "–" : f1(100 - ap) + "%"}</div><div class="l">Men</div><div class="s">${A.m} people</div></div>
+    <div class="stat d"><div class="n">${A.t ? f1(pct(A.pt, A.t)) + "%" : "–"}</div><div class="l">Persons with disabilities</div><div class="s">${A.pt} of ${A.t} people</div></div>`;
+
+  // categories
+  const cats = CATS.map(c => ({ ...c, rows: list.filter(r => r.category === c.key) }))
+                   .map(c => ({ ...c, d: tot(c.rows) }));
+  $("sumlead").textContent = sel === ALL ? "All agencies combined." : sel + ".";
+
+  let tb = `<table><thead><tr><th>Category</th><th>Women</th><th>Men</th><th>Total</th><th>% of women</th><th>Women with disabilities</th><th>Men with disabilities</th><th>Total with disabilities</th><th>% with disabilities</th><th>Parity status</th></tr></thead><tbody>`;
+  cats.forEach(c => {
+    const p = pct(c.d.w, c.d.t);
+    if (!c.d.t){ tb += `<tr><td>${c.label}</td><td colspan="9" class="nodata">No data reported</td></tr>`; return; }
+    tb += `<tr><td>${c.label}</td><td>${c.d.w}</td><td>${c.d.m}</td><td>${c.d.t}</td><td>${f1(p)}%</td><td>${c.d.pw}</td><td>${c.d.pm}</td><td>${c.d.pt}</td><td>${f1(pct(c.d.pt, c.d.t))}%</td><td>${pill(status(p))}</td></tr>`;
+  });
+  tb += `<tr class="total"><td>All personnel reported</td><td>${A.w}</td><td>${A.m}</td><td>${A.t}</td><td>${ap === null ? "" : f1(ap) + "%"}</td><td>${A.pw}</td><td>${A.pm}</td><td>${A.pt}</td><td>${A.t ? f1(pct(A.pt, A.t)) + "%" : ""}</td><td>${pill(status(ap))}</td></tr></tbody></table>`;
+  $("summary").innerHTML = tb;
+
+  // parity bars
+  const prs = cats.filter(c => c.d.t).map(c => ({ name: c.label, d: c.d }));
+  prs.unshift({ name: "All personnel", d: A });
+  $("parity").innerHTML = A.t ? prs.map(g => {
+    const p = pct(g.d.w, g.d.t), s = status(p);
+    return `<div class="prow"><div class="pname">${g.name}<small>${g.d.t} people</small></div>${parityTrack(p, g.name)}<div class="pval">${f1(p)}% women<small>${s.detail}</small></div></div>`;
+  }).join("") + axisRow : `<p class="empty">No data for this selection.</p>`;
+
+  // agency comparison
+  const names = [...new Set(rows.map(r => r.agency))];
+  const cmp = $("compareSection");
+  if (names.length > 1){
+    cmp.style.display = "";
+    const data = names.map(n => ({ n, d: tot(rows.filter(r => r.agency === n)) })).filter(x => x.d.t)
+      .sort((a, b) => pct(b.d.w, b.d.t) - pct(a.d.w, a.d.t));
+    data.unshift({ n: "UNCT total", d: tot(rows) });
+    $("compare").innerHTML = data.map(x => {
+      const p = pct(x.d.w, x.d.t), s = status(p);
+      return `<div class="prow"><div class="pname">${esc(x.n)}<small>${x.d.t} people</small></div>${parityTrack(p, x.n)}<div class="pval">${f1(p)}% women<small>${s.detail}</small></div></div>`;
+    }).join("") + axisRow;
+  } else cmp.style.display = "none";
+
+  // detail by level
+  const maxCount = Math.max(1, ...list.map(r => Math.max(r.w, r.m)));
+  let det = "";
+  cats.filter(c => c.d.t).forEach(c => {
+    const byLevel = {};
+    c.rows.forEach(r => { (byLevel[r.level] = byLevel[r.level] || []).push(r); });
+    const levels = Object.keys(byLevel).sort(levelSort).map(l => ({ l, d: tot(byLevel[l]) })).filter(x => x.d.t);
+    let groups = { "": levels };
+    if (c.key === "Staff"){
+      groups = {};
+      levels.forEach(x => { const g = staffGroup(x.l); (groups[g] = groups[g] || []).push(x); });
+    }
+    let body = `<div class="axishint"><span></span><span>Women</span><span>Men</span><span>% women</span></div>`;
+    let first = true;
+    Object.entries(groups).forEach(([g, lv]) => {
+      if (g){
+        const gt = tot(lv.flatMap(x => byLevel[x.l]));
+        body += `<div class="ghead ${first ? "first" : ""}"><b>${g}</b><span>${gt.t} people · ${f1(pct(gt.w, gt.t))}% women</span></div>`;
+      }
+      first = false;
+      lv.forEach(x => {
+        body += `<div class="grow"><div class="lab" title="${esc(x.l)}">${esc(x.l)}</div>
+          <div class="half l">${x.d.w ? `<span class="num">${x.d.w}</span>` : ""}<div class="bar w" style="width:${(x.d.w / maxCount) * 88}%"></div></div>
+          <div class="half r"><div class="bar m" style="width:${(x.d.m / maxCount) * 88}%"></div>${x.d.m ? `<span class="num">${x.d.m}</span>` : ""}</div>
+          <div class="pc">${f1(pct(x.d.w, x.d.t))}%</div></div>`;
+      });
+    });
+    det += `<section><h2>${c.label}: detail by level</h2><p class="lead">${c.d.t} people · ${c.d.w} women and ${c.d.m} men. Number of women (left) and men (right) at each level.</p>${body}</section>`;
+  });
+  $("details").innerHTML = det;
+
+  // disability
+  const box = (label, d, extra) => `<div class="dbox"><div class="n">${d.t ? f1(pct(d.pt, d.t)) + "%" : "–"}</div>
+    <div class="l">${label}: ${d.pt} of ${d.t}${extra || ""}</div>
+    <div class="dbar"><div style="width:${d.t ? Math.max(pct(d.pt, d.t), d.pt ? 1 : 0) : 0}%"></div></div></div>`;
+  $("pwd").innerHTML = A.t
+    ? box("All personnel", A, ` (${A.pw} women, ${A.pm} men)`) + cats.filter(c => c.d.t).map(c => box(c.label, c.d)).join("")
+    : `<p class="empty">No data for this selection.</p>`;
+
+  // notes
+  const ns = agencies.filter(a => a.note && (sel === ALL || a.name === sel));
+  $("notes").innerHTML = ns.map(a => `<p class="note"><b>${esc(a.name)} data note:</b> ${esc(a.note)}</p>`).join("");
+  $("foot").textContent = (isDemo ? "Sample data. " : "") + "Source: UNCT Gender Parity Data Collection Form. Last loaded " + new Date().toLocaleString() + ".";
+}
+
+function fillPicker(keep){
+  const names = [...new Set(rows.map(r => r.agency))].sort();
+  const opts = [ALL, ...names];
+  $("agency").innerHTML = opts.map(n => `<option>${esc(n)}</option>`).join("");
+  $("agency").value = opts.includes(keep) ? keep : (names.length === 1 ? names[0] : ALL);
+}
+async function start(){
+  const keep = $("agency").value;
+  await loadData(); fillPicker(keep); render();
+}
+$("agency").addEventListener("change", render);
+$("refresh").addEventListener("click", start);
+$("print").addEventListener("click", () => window.print());
+start();
+</script>
+</body>
+</html>
