@@ -8,37 +8,52 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+  /* ================= COLOUR THEME (edit the codes after the # to restyle) ================= */
   :root{
-    --bg:#F6F7F9; --surface:#FFFFFF; --ink:#1B2430; --muted:#5B6675; --line:#DDE2E9;
-    --women:#0E7C86; --men:#3B4A6B; --pwd:#C77700; --band:#DCEBEE; --bad:#B42318; --good:#1B7A3E;
+    --brand:#009EDB;      /* UN blue: lines, buttons, focus */
+    --navy:#0B3556;       /* dark blue: top number band, headings */
+    --bg:#F3F6F9; --surface:#FFFFFF; --ink:#16212C; --muted:#52606E; --line:#D9E0E8;
+    --women:#009EDB;      /* women in charts */
+    --men:#26435E;        /* men in charts */
+    --pwd:#B97A00;        /* persons with disabilities */
+    --band:#D9EEF8;       /* shaded parity band */
+    --bad:#B42318; --good:#1B7A3E;
     --radius:6px;
   }
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--ink);font-family:"Public Sans",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.5}
-  .wrap{max-width:1080px;margin:0 auto;padding:28px 20px 56px}
-  header{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:18px}
-  h1{font-size:1.75rem;line-height:1.2;margin:0 0 6px;font-weight:700;letter-spacing:-.01em}
-  .sub{margin:0;color:var(--muted);max-width:62ch}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+  .content{padding-top:24px;padding-bottom:56px}
+  .topbar{background:#fff;border-bottom:4px solid var(--brand)}
+  .topin{display:flex;align-items:center;gap:20px;padding-top:16px;padding-bottom:16px;flex-wrap:wrap}
+  .logo{height:60px;width:auto;display:block}
+  .titles{flex:1;min-width:260px}
+  h1{font-size:1.6rem;line-height:1.2;margin:0 0 4px;font-weight:700;letter-spacing:-.01em;color:var(--navy)}
+  .sub{margin:0;color:var(--muted);max-width:66ch;font-size:.93rem}
   .tools{display:flex;gap:8px;flex-wrap:wrap}
   button,select{font:inherit;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:var(--radius);padding:8px 14px}
   button{font-weight:600;cursor:pointer}
+  .tools button{border-color:var(--brand);color:var(--navy)}
+  .tools button:hover{background:var(--brand);color:#fff;border-color:var(--brand)}
   button:hover,select:hover{border-color:var(--ink)}
   button:focus-visible,select:focus-visible{outline:3px solid var(--women);outline-offset:2px}
-  .picker{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap}
-  .picker label{font-weight:600}
-  .picker select{min-width:240px;font-weight:600}
+  .hero{background:var(--navy);color:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .hero .wrap{padding-top:18px;padding-bottom:22px}
+  .picker{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+  .picker label{font-weight:600;font-size:.95rem}
+  .picker select{min-width:260px;font-weight:600;border-color:transparent}
   .banner{background:#FFF8EC;border-left:3px solid var(--pwd);padding:10px 14px;font-size:.9rem;margin-bottom:18px;border-radius:0 var(--radius) var(--radius) 0}
 
-  .stats{display:grid;grid-template-columns:repeat(4,1fr);background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:20px}
-  .stat{padding:18px 20px;border-left:1px solid var(--line)}
-  .stat:first-child{border-left:0}
-  .stat .n{font-size:2.1rem;font-weight:700;line-height:1.1;letter-spacing:-.02em}
-  .stat .l{color:var(--muted);font-size:.9rem;margin-top:4px}
-  .stat .s{font-size:.82rem;color:var(--muted);margin-top:2px}
-  .stat.w .n{color:var(--women)} .stat.m .n{color:var(--men)} .stat.d .n{color:var(--pwd)}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr)}
+  .stat{padding:4px 22px;border-left:1px solid rgba(255,255,255,.25)}
+  .stat:first-child{border-left:0;padding-left:0}
+  .stat .n{font-size:2.5rem;font-weight:700;line-height:1.1;letter-spacing:-.02em}
+  .stat .l{font-size:.95rem;margin-top:4px;color:#fff}
+  .stat .s{font-size:.82rem;color:#B9CCDD;margin-top:2px}
+  .stat.w .n{color:#5CCBF5} .stat.m .n{color:#E3EAF1} .stat.d .n{color:#FFC857}
 
   section{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px 24px;margin-bottom:20px}
-  h2{font-size:1.15rem;margin:0 0 4px;font-weight:600}
+  h2{font-size:1.15rem;margin:0 0 4px;font-weight:600;color:var(--navy)}
   .lead{margin:0 0 16px;color:var(--muted);font-size:.93rem;max-width:72ch}
   .empty{color:var(--muted);font-style:italic}
 
@@ -46,9 +61,9 @@
   .tablewrap{overflow-x:auto}
   table{border-collapse:collapse;width:100%;font-size:.9rem;min-width:760px}
   th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:center}
-  th{font-weight:600;background:#F0F3F7;font-size:.82rem}
+  th{font-weight:600;background:#E4EEF6;color:var(--navy);font-size:.82rem}
   th:first-child,td:first-child{text-align:left}
-  tr.total td{font-weight:700;background:#F0F3F7}
+  tr.total td{font-weight:700;background:#E4EEF6}
   td.nodata{color:var(--muted);text-align:left}
   .pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:.78rem;font-weight:600;white-space:nowrap}
   .pill.ok{background:#DDF3E4;color:var(--good)} .pill.off{background:#FBE4E1;color:var(--bad)}
@@ -96,26 +111,30 @@
 
   .note{font-size:.85rem;color:var(--muted);border-left:3px solid var(--pwd);padding:8px 12px;background:#FFF8EC;margin:0 0 10px;max-width:90ch}
   footer{font-size:.82rem;color:var(--muted);margin-top:10px}
+  .sitefoot{background:var(--navy);color:#B9CCDD;font-size:.85rem}
+  .sitefoot .wrap{padding-top:16px;padding-bottom:16px}
 
   @media (max-width:760px){
     .stats{grid-template-columns:repeat(2,1fr)}
-    .stat:nth-child(3){border-left:0}
-    .stat:nth-child(n+3){border-top:1px solid var(--line)}
+    .stat{padding:10px 14px}
+    .stat:nth-child(odd){border-left:0;padding-left:0}
+    .stat:nth-child(n+3){border-top:1px solid rgba(255,255,255,.25)}
+    .logo{height:48px}
     .prow,.axis{grid-template-columns:1fr}
     .axis > div:first-child,.axis > div:last-child{display:none}
     .grow,.axishint{grid-template-columns:96px 1fr 1fr 44px}
     section{padding:18px 14px}
   }
   @media print{
-    body{background:#fff} .noprint{display:none} section,.stats{break-inside:avoid;border-color:#ccc}
+    body{background:#fff} .noprint{display:none} section,.stats{break-inside:avoid;border-color:#ccc} .topbar{border-bottom-color:#009EDB}
   }
 </style>
 </head>
 <body>
-<div class="wrap">
-
-  <header>
-    <div>
+<div class="topbar">
+  <div class="wrap topin">
+    <img class="logo" src="logo.png" alt="United Nations in Lao PDR" onerror="this.style.display='none'">
+    <div class="titles">
       <h1>UNCT Gender Parity Dashboard: Lao PDR</h1>
       <p class="sub">Women, men and persons with disabilities among UN personnel, by agency. Baseline for the UNCT Gender Parity Action Plan (UNCT-SWAP Gender Scorecard PI 4.3).</p>
     </div>
@@ -123,16 +142,22 @@
       <button id="refresh" type="button">Refresh data</button>
       <button id="print" type="button">Print page</button>
     </div>
-  </header>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="wrap">
+    <div class="picker noprint">
+      <label for="agency">Showing</label>
+      <select id="agency"></select>
+    </div>
+    <div class="stats" id="stats"></div>
+  </div>
+</div>
+
+<main class="wrap content">
 
   <div id="banner"></div>
-
-  <div class="picker noprint">
-    <label for="agency">Agency</label>
-    <select id="agency"></select>
-  </div>
-
-  <div class="stats" id="stats"></div>
 
   <section>
     <h2>Summary by personnel category</h2>
@@ -162,19 +187,15 @@
 
   <div id="notes"></div>
   <footer id="foot"></footer>
-</div>
+</main>
 
+<div class="sitefoot"><div class="wrap">United Nations in Lao PDR · UN Country Team gender parity baseline</div></div>
+
+<script src="config.js"></script>
 <script>
-/* ============================================================
-   STEP FOR YOU: paste your two Google Sheets links between the
-   quotation marks below (see the instructions). Leave them empty
-   to see the built-in WHO sample data.
-   ============================================================ */
-const CONFIG = {
-  dataCsvUrl:     "https://docs.google.com/spreadsheets/d/e/2PACX-1vT0OzTp8uT5TSo9yaCulAjwXcdjUlGOBgiioEhcVd4CYZ9yytqv21PLmOoUYGs_zQ/pub?gid=1792396556&single=true&output=csv",   // link of the published "Data" tab (CSV)
-  agenciesCsvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT0OzTp8uT5TSo9yaCulAjwXcdjUlGOBgiioEhcVd4CYZ9yytqv21PLmOoUYGs_zQ/pub?gid=495360036&single=true&output=csv"    // link of the published "Agencies" tab (CSV)
-};
-/* ============================ end ============================ */
+/* The Google Sheet links are kept in the separate file config.js,
+   so you can change the design without losing them. */
+const CONFIG = window.DASHBOARD_CONFIG || { dataCsvUrl: "", agenciesCsvUrl: "" };
 
 const ALL = "All agencies (UNCT)";
 const BAND_LOW = 47, BAND_HIGH = 53;
