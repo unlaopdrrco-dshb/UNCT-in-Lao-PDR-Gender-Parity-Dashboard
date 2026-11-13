@@ -109,6 +109,19 @@
   .dbar{height:8px;background:#EEF1F5;border-radius:4px;margin-top:10px;overflow:hidden}
   .dbar div{height:100%;background:var(--pwd)}
 
+  /* donut */
+  .donutwrap{display:flex;flex-direction:column;align-items:center}
+  .donutwrap svg{width:100%;max-width:560px;height:auto;overflow:visible}
+  .dleg{display:flex;gap:28px;flex-wrap:wrap;justify-content:center;margin-top:6px;font-size:.95rem}
+  .dleg i{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:8px;vertical-align:-1px}
+  .dleg b{font-weight:700}
+  .cgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}
+  .ccard{border:1px solid var(--line);border-radius:var(--radius);padding:14px 14px 14px;text-align:center}
+  .ccard h3{font-size:.98rem;margin:0 0 2px;color:var(--navy);font-weight:600}
+  .ccard svg{width:100%;max-width:190px;height:auto}
+  .ccap{font-size:.88rem;text-align:left;display:inline-block;margin:2px 0 8px}
+  .ccap div{margin:2px 0}
+  .ccap i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:7px}
   .note{font-size:.85rem;color:var(--muted);border-left:3px solid var(--pwd);padding:8px 12px;background:#FFF8EC;margin:0 0 10px;max-width:90ch}
   footer{font-size:.82rem;color:var(--muted);margin-top:10px}
   .sitefoot{background:var(--navy);color:#B9CCDD;font-size:.85rem}
@@ -160,6 +173,18 @@
   <div id="banner"></div>
 
   <section>
+    <h2>Overall: women and men</h2>
+    <p class="lead" id="donutlead"></p>
+    <div class="donutwrap" id="donut"></div>
+  </section>
+
+  <section id="catSection">
+    <h2>Women and men by category</h2>
+    <p class="lead">One chart for each type of personnel that has data.</p>
+    <div class="cgrid" id="catDonuts"></div>
+  </section>
+
+  <section>
     <h2>Summary by personnel category</h2>
     <p class="lead" id="sumlead"></p>
     <div class="tablewrap" id="summary"></div>
@@ -182,6 +207,7 @@
   <section>
     <h2>Persons with disabilities</h2>
     <p class="lead">Share of personnel who reported a disability. Persons with disabilities are already counted in the women and men figures.</p>
+    <div class="donutwrap" id="pwdDonut" style="margin-bottom:18px"></div>
     <div class="dgrid" id="pwd"></div>
   </section>
 
@@ -312,6 +338,51 @@ function levelSort(a, b){
   return (ia < 0 ? 999 : ia) - (ib < 0 ? 999 : ib);
 }
 
+
+/* ---------- donut charts ---------- */
+const GREY = "#C9D3DE";
+function ringParts(slices, cx, cy, r, sw){
+  const total = sum(slices, x => x.v), C = 2 * Math.PI * r;
+  let off = 0, out = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#EEF1F5" stroke-width="${sw}"/>`;
+  const placed = [];
+  slices.forEach(x => {
+    if (!x.v) return;
+    const frac = x.v / total;
+    out += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${x.color}" stroke-width="${sw}" stroke-dasharray="${frac * C} ${C}" stroke-dashoffset="${-off * C}" transform="rotate(-90 ${cx} ${cy})"/>`;
+    placed.push({ ...x, frac, mid: (off + frac / 2) * 360 });
+    off += frac;
+  });
+  return { svg: out, placed, total };
+}
+/* Large donut with labels and leader lines. slices: [{v, color, word}] */
+function donutBig(slices, centerLabel){
+  const total = sum(slices, x => x.v);
+  if (!total) return '<p class="empty">No data for this selection.</p>';
+  const cx = 280, cy = 165, r = 82, sw = 44;
+  const R = ringParts(slices, cx, cy, r, sw);
+  let svg = `<svg viewBox="0 0 560 330" role="img" aria-label="${R.placed.map(p => f1(p.frac * 100) + " percent " + p.word).join(", ")}">` + R.svg;
+  svg += `<text x="${cx}" y="${cy + 4}" text-anchor="middle" font-size="34" font-weight="700" fill="var(--navy)">${total}</text>
+          <text x="${cx}" y="${cy + 24}" text-anchor="middle" font-size="13" fill="#52606E">${centerLabel}</text>`;
+  R.placed.forEach(p => {
+    const a = p.mid * Math.PI / 180, right = Math.sin(a) >= 0;
+    const x1 = cx + (r + sw / 2 + 4) * Math.sin(a), y1 = cy - (r + sw / 2 + 4) * Math.cos(a);
+    const x2 = cx + (r + sw / 2 + 26) * Math.sin(a), y2 = cy - (r + sw / 2 + 26) * Math.cos(a);
+    const x3 = x2 + (right ? 18 : -18), tx = x3 + (right ? 6 : -6), an = right ? "start" : "end";
+    svg += `<polyline points="${x1},${y1} ${x2},${y2} ${x3},${y2}" fill="none" stroke="#8A97A5" stroke-width="1"/>
+      <text x="${tx}" y="${y2 - 2}" text-anchor="${an}" font-size="20" font-weight="700" fill="#16212C">${f1(p.frac * 100)}%</text>
+      <text x="${tx}" y="${y2 + 16}" text-anchor="${an}" font-size="13" fill="#52606E">${p.v} ${p.word}</text>`;
+  });
+  return svg + "</svg>" + `<div class="dleg">` + slices.map(x => `<span><i style="background:${x.color}"></i>${x.word.charAt(0).toUpperCase() + x.word.slice(1)} <b>${x.v}</b></span>`).join("") + `</div>`;
+}
+/* Small donut for the category cards */
+function donutSmall(slices){
+  const total = sum(slices, x => x.v), cx = 100, cy = 100, r = 62, sw = 30;
+  const R = ringParts(slices, cx, cy, r, sw);
+  return `<svg viewBox="0 0 200 200" role="img" aria-label="${R.placed.map(p => f1(p.frac * 100) + " percent " + p.word).join(", ")}">${R.svg}
+    <text x="${cx}" y="${cy + 3}" text-anchor="middle" font-size="26" font-weight="700" fill="var(--navy)">${total}</text>
+    <text x="${cx}" y="${cy + 20}" text-anchor="middle" font-size="11" fill="#52606E">personnel</text></svg>`;
+}
+
 /* ---------- drawing ---------- */
 function parityTrack(p, label){
   return `<div class="track" role="img" aria-label="${esc(label)}: ${f1(p)} percent women">
@@ -339,10 +410,25 @@ function render(){
     <div class="stat m"><div class="n">${ap === null ? "–" : f1(100 - ap) + "%"}</div><div class="l">Men</div><div class="s">${A.m} people</div></div>
     <div class="stat d"><div class="n">${A.t ? f1(pct(A.pt, A.t)) + "%" : "–"}</div><div class="l">Persons with disabilities</div><div class="s">${A.pt} of ${A.t} people</div></div>`;
 
+  $("donut").innerHTML = donutBig([{ v:A.w, color:"var(--women)", word:"women" }, { v:A.m, color:"var(--men)", word:"men" }], "personnel");
+  $("donutlead").textContent = (sel === ALL ? "All agencies combined" : sel) + ". Share of all reported personnel (staff and non-staff).";
+
   // categories
   const cats = CATS.map(c => ({ ...c, rows: list.filter(r => r.category === c.key) }))
                    .map(c => ({ ...c, d: tot(c.rows) }));
   $("sumlead").textContent = sel === ALL ? "All agencies combined." : sel + ".";
+
+  // one small donut per category that has data
+  const withData = cats.filter(c => c.d.t);
+  $("catSection").style.display = withData.length ? "" : "none";
+  $("catDonuts").innerHTML = withData.map(c => {
+    const pw = pct(c.d.w, c.d.t);
+    return `<div class="ccard"><h3>${c.label}</h3>
+      ${donutSmall([{ v:c.d.w, color:"var(--women)", word:"women" }, { v:c.d.m, color:"var(--men)", word:"men" }])}
+      <div><div class="ccap"><div><i style="background:var(--women)"></i>Women <b>${f1(pw)}%</b> (${c.d.w})</div>
+      <div><i style="background:var(--men)"></i>Men <b>${f1(100 - pw)}%</b> (${c.d.m})</div></div></div>
+      <div>${pill(status(pw))}</div></div>`;
+  }).join("");
 
   let tb = `<table><thead><tr><th>Category</th><th>Women</th><th>Men</th><th>Total</th><th>% of women</th><th>Women with disabilities</th><th>Men with disabilities</th><th>Total with disabilities</th><th>% with disabilities</th><th>Parity status</th></tr></thead><tbody>`;
   cats.forEach(c => {
@@ -407,6 +493,7 @@ function render(){
   $("details").innerHTML = det;
 
   // disability
+  $("pwdDonut").innerHTML = A.t ? donutBig([{ v:A.pt, color:"var(--pwd)", word:"with disabilities" }, { v:A.t - A.pt, color:GREY, word:"without reported disability" }], "personnel") : "";
   const box = (label, d, extra) => `<div class="dbox"><div class="n">${d.t ? f1(pct(d.pt, d.t)) + "%" : "–"}</div>
     <div class="l">${label}: ${d.pt} of ${d.t}${extra || ""}</div>
     <div class="dbar"><div style="width:${d.t ? Math.max(pct(d.pt, d.t), d.pt ? 1 : 0) : 0}%"></div></div></div>`;
